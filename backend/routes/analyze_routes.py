@@ -6,13 +6,15 @@ from services.data_parser import parse_response_json
 from services.preprocess import preprocess_dataframe
 from services.llm_analyzer import run_overall_analysis_agent
 from models.analysis_schema import OverallAnalysisResponse
+from typing import Optional
+from config.config_manager import load_system_definition
 
 router = APIRouter()
 
 @router.post("/analyze-request", response_model=OverallAnalysisResponse)
 async def analyze_request(
     request_file: UploadFile = File(...),
-    system: str = Form(...),
+    system: Optional[str] = Form(None),
 ):
     try:
         # Read and parse the uploaded JSON file
@@ -21,6 +23,14 @@ async def analyze_request(
             request_json = json.loads(content)
         except Exception:
             raise HTTPException(status_code=400, detail="Invalid JSON file uploaded.")
+
+        # If system is not provided, fetch from system_definition.yaml
+        if system is None:
+            system_def = load_system_definition.__wrapped__(None)  # loads the dict
+            if len(system_def) == 1:
+                system = list(system_def.keys())[0]
+            else:
+                raise HTTPException(status_code=400, detail="System not provided and could not be inferred.")
 
         # Fetch data from Konom
         try:

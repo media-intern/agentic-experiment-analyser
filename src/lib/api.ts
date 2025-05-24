@@ -4,13 +4,13 @@
 const BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8000/api";
 
 
-export async function sendRequestJson(payload: any) {
+export async function sendRequestJson(file: File) {
+  const formData = new FormData();
+  formData.append('request_file', file);
+
   const response = await fetch(`${BASE_URL}/analyze-request`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(payload),
+    method: 'POST',
+    body: formData,
   });
 
   if (!response.ok) {

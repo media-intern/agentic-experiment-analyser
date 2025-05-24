@@ -39,7 +39,7 @@ const UploadPage = () => {
     setError(null);
     abortControllerRef.current = new AbortController();
     try {
-      const res = await sendRequestJson(file, 'BSS');
+      const res = await sendRequestJson(file);
       setResults(res);
       navigate('/results');
     } catch (err: any) {
