@@ -1,0 +1,42 @@
+// src/lib/api.ts
+
+export async function sendRequestJson(file: File, system: string) {
+    const formData = new FormData();
+    formData.append("request_file", file);
+    formData.append("system", system);
+  
+    const response = await fetch("http://localhost:8000/api/analyze-request", {
+      method: "POST",
+      body: formData,
+    });
+  
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Backend error: ${response.status} - ${errorText}`);
+    }
+  
+    return await response.json();
+  }
+  
+  export async function sendDeepDiveQuery(payload: {
+    request_json: object;
+    system: string;
+    dimensions: string[];
+  }, signal?: AbortSignal) {
+    const response = await fetch("http://localhost:8000/api/deep-dive-query", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+      signal,
+    });
+  
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Deep Dive error: ${response.status} - ${errorText}`);
+    }
+  
+    return await response.json();
+  }
+  

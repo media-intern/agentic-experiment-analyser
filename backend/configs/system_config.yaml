@@ -1,0 +1,21 @@
+#This is a configuration file which tells the Agent which metrics are important for each system (eg. BSS, DMM, Prog ) and how to prioritize them.
+
+BSS:
+  logic: |
+    Depends on DSP and Network metrics.
+    SSP metrics can be ignored
+
+MowX:
+  logic: |
+    Prioritize MNet revenue.
+    DSP is passive here.
+
+DMM:
+  logic: |
+    DSP and SSP are equally weighted.
+    Network metrics are secondary unless alarming.
+
+Prog:
+  logic: |
+    Prioritize MNet revenue.
+   

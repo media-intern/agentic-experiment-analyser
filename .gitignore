@@ -1,0 +1,15 @@
+# Ignore Python artifacts
+__pycache__/
+*.pyc
+
+# Ignore environment files
+backend/.env
+.env
+
+# Node + Vite files
+node_modules/
+dist/
+.vscode/
+
+# Mac/OS & system files
+.DS_Store
