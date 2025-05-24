@@ -4,6 +4,6 @@ pandas
 openai
 requests
 pyyaml
-python-dotenv 
+python-dotenv
 python-multipart
 aiofiles
