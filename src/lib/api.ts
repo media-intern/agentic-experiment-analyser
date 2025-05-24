@@ -5,7 +5,7 @@ export async function sendRequestJson(file: File, system: string) {
     formData.append("request_file", file);
     formData.append("system", system);
   
-    const response = await fetch("http://localhost:8000/api/analyze-request", {
+    const response = await fetch("https://agentic-experiment-analyser.onrender.com", {
       method: "POST",
       body: formData,
     });
@@ -23,7 +23,7 @@ export async function sendRequestJson(file: File, system: string) {
     system: string;
     dimensions: string[];
   }, signal?: AbortSignal) {
-    const response = await fetch("http://localhost:8000/api/deep-dive-query", {
+    const response = await fetch("https://agentic-experiment-analyser.onrender.com", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
