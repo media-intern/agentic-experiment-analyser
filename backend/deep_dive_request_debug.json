@@ -22,6 +22,11 @@
       "threshold": 5
     },
     {
+      "dimension": "Data center",
+      "outputName": "Data center",
+      "threshold": "10"
+    },
+    {
       "dimension": "Cookie Flag",
       "outputName": "Cookie Flag",
       "threshold": "10"
@@ -680,6 +685,11 @@
       "dimension": "Experiment Tokens",
       "outputName": "Experiment Tokens",
       "threshold": 5
+    },
+    {
+      "dimension": "Data center",
+      "outputName": "Data center",
+      "threshold": "10"
     },
     {
       "dimension": "Cookie Flag",

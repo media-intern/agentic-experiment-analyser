@@ -1,10 +1,37 @@
 {
   "name": "minimal-tailwind-app",
   "version": "1.0.0",
+  "main": "electron/main.js",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "electron": "electron .",
+    "dist": "electron-builder"
+  },
+  "build": {
+    "appId": "com.agentic.app",
+    "win": {
+      "target": "nsis",
+      "icon": "icon.ico"
+    },
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "dist/**/*",
+      "electron/**/*",
+      "backend/**/*",
+      "public/**/*",
+      "package.json"
+    ],
+    "extraResources": [
+      {
+        "from": "backend/.env",
+        "to": "backend/.env",
+        "filter": ["**/*"]
+      }
+    ]
   },
   "dependencies": {
     "@heroicons/react": "^2.2.0",
@@ -20,6 +47,8 @@
     "@types/react-router-dom": "^5.3.3",
     "@vitejs/plugin-react": "^4.0.0",
     "autoprefixer": "^10.4.0",
+    "electron": "^36.3.1",
+    "electron-builder": "^26.0.12",
     "postcss": "^8.4.0",
     "tailwindcss": "^3.3.0",
     "typescript": "^4.9.0",

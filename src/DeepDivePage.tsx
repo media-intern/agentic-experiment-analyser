@@ -100,7 +100,7 @@ const DeepDivePage = () => {
       if (err.name === 'AbortError' || (err.message && err.message.includes('Konom fetch failed'))) {
         setError(null);
       } else {
-        setError(err.message || 'Something went wrong');
+      setError(err.message || 'Something went wrong');
       }
     } finally {
       setIsLoading(false);
@@ -247,16 +247,16 @@ const DeepDivePage = () => {
 
             {/* Initial selection: show all dimensions as buttons if none selected */}
             {dimensions.length === 0 && (
-              <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-2">
                 {availableDimensions.map(dim => (
-                  <button
-                    key={dim}
+              <button
+                key={dim}
                     onClick={() => handleAddDimension(dim)}
                     className="px-3 py-1 rounded-full border text-sm font-semibold shadow-sm border-gray-300 text-gray-700 bg-indigo-50 hover:bg-indigo-100"
-                  >
-                    {dim}
-                  </button>
-                ))}
+              >
+                {dim}
+              </button>
+            ))}
               </div>
             )}
 
@@ -325,7 +325,7 @@ const DeepDivePage = () => {
         {response && (
           <>
             <div ref={reportRef} className="mt-8">
-              <h3 className="text-xl font-bold text-indigo-700 mb-4">Segment Insights</h3>
+            <h3 className="text-xl font-bold text-indigo-700 mb-4">Segment Insights</h3>
               {processedSegments.map((segment: any, index: number) => (
                 <div key={index} className="mb-10 avoid-break no-rounded no-shadow no-overflow" data-html2pdf-pagebreak="avoid">
                   <div className="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-2xl mb-4">
@@ -336,15 +336,15 @@ const DeepDivePage = () => {
                     <div className="overflow-x-auto">
                       {segment.metrics && segment.metrics.length > 0 ? (
                         <table className="min-w-full border-separate border-spacing-y-2 mb-4 pdf-metrics-table">
-                          <thead>
+                  <thead>
                             <tr className="text-left text-gray-600 text-sm">
                               <th className="px-4 py-2">Metric</th>
                               <th className="px-4 py-2">Value</th>
                               <th className="px-4 py-2">Baseline</th>
                               <th className="px-4 py-2">%Change</th>
-                            </tr>
-                          </thead>
-                          <tbody>
+                    </tr>
+                  </thead>
+                  <tbody>
                             {(() => {
                               const allMetricNames: string[] = Array.from(new Set(segment.metrics.map((m: any) => String(m.name))));
                               const sortedMetricNames: string[] = [
@@ -405,8 +405,8 @@ const DeepDivePage = () => {
                       </ul>
                     </div>
                   )}
-                </div>
-              ))}
+              </div>
+            ))}
             </div>
             <div className="flex gap-4 mt-4">
               <button
@@ -415,7 +415,7 @@ const DeepDivePage = () => {
               >
                 Download Deep Dive PDF
               </button>
-            </div>
+          </div>
           </>
         )}
       </div>

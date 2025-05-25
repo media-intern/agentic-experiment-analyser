@@ -2,13 +2,22 @@ import pandas as pd
 import yaml
 import logging
 from typing import Dict, Any, List
+from config.config_manager import CONFIG_DIR
+import os
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-with open("configs/metric_config.yaml") as f:
-    METRIC_CONFIG = yaml.safe_load(f)
+metric_config_path = os.path.join(CONFIG_DIR, "metric_config.yaml")
+print("[CONFIG LOAD] Looking for metric_config.yaml at:", metric_config_path)
+print("[CONFIG LOAD] Exists?", os.path.exists(metric_config_path))
+try:
+    with open(metric_config_path) as f:
+        METRIC_CONFIG = yaml.safe_load(f)
+except Exception as e:
+    print("[CONFIG LOAD] Failed to open metric_config.yaml:", e)
+    raise
 
 KNOWN_METRICS = list(METRIC_CONFIG.keys()) + ["Net Profit", "Cost"]
 extracted_rows = []

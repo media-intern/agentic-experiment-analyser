@@ -31,4 +31,4 @@ class DeepDiveSegment(BaseModel):
     scalability_verdict: ScalabilityVerdict
 
 class DeepDiveResponse(BaseModel):
-    segments: List[DeepDiveSegment] 
+    segments: List[DeepDiveSegment]

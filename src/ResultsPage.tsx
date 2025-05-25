@@ -15,7 +15,7 @@ const ResultsPage = () => {
       setShowPopup(true);
       setTimeout(() => {
         setShowPopup(false);
-        navigate('/upload');
+      navigate('/upload');
       }, 1800);
     }
   }, [results, navigate]);
@@ -129,13 +129,13 @@ const ResultsPage = () => {
                       if (!m) return null;
                       return (
                         <tr key={metricName} className={
-                          m.significance === 'positive' ? 'bg-green-50' : m.significance === 'negative' ? 'bg-red-50' : ''
-                        }>
-                          <td className="px-4 py-2 font-medium text-gray-700">{m.name}</td>
-                          <td className="px-4 py-2">{typeof m.value === 'number' ? m.value.toFixed(2) : String(m.value)}</td>
-                          <td className="px-4 py-2">{typeof m.baseline === 'number' ? m.baseline.toFixed(2) : String(m.baseline)}</td>
+                      m.significance === 'positive' ? 'bg-green-50' : m.significance === 'negative' ? 'bg-red-50' : ''
+                    }>
+                      <td className="px-4 py-2 font-medium text-gray-700">{m.name}</td>
+                      <td className="px-4 py-2">{typeof m.value === 'number' ? m.value.toFixed(2) : String(m.value)}</td>
+                      <td className="px-4 py-2">{typeof m.baseline === 'number' ? m.baseline.toFixed(2) : String(m.baseline)}</td>
                           <td className="px-4 py-2">{m['%Change'] ? m['%Change'] : '-'}</td>
-                        </tr>
+                    </tr>
                       );
                     });
                   })()}
