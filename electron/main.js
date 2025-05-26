@@ -7,23 +7,29 @@ const path = require('path');
 let backendProcess = null;
 
 function startBackendServer() {
-  // Path to the PyInstaller-built backend executable
-  const backendExe = path.join(__dirname, '..', 'backend', 'dist', 'main.exe');
-  console.log('🛠️ Starting backend from:', backendExe);
+  const isPackaged = app.isPackaged;
+  const backendExe = isPackaged
+    ? path.join(process.resourcesPath, 'backend', 'dist', 'main.exe')
+    : path.join(__dirname, '..', 'backend', 'dist', 'main.exe');
+  console.log('🛠️ Attempting to start backend from:', backendExe);
 
-  backendProcess = spawn(backendExe, [], { cwd: path.dirname(backendExe) });
+  try {
+    backendProcess = spawn(backendExe, [], { cwd: path.dirname(backendExe) });
 
-  backendProcess.stdout.on('data', (data) => {
-    console.log(`[Backend] ${data}`);
-  });
+    backendProcess.stdout.on('data', (data) => {
+      console.log(`[Backend] ${data}`);
+    });
 
-  backendProcess.stderr.on('data', (data) => {
-    console.error(`[Backend ERROR] ${data}`);
-  });
+    backendProcess.stderr.on('data', (data) => {
+      console.error(`[Backend ERROR] ${data}`);
+    });
 
-  backendProcess.on('close', (code) => {
-    console.log(`Backend process exited with code ${code}`);
-  });
+    backendProcess.on('close', (code) => {
+      console.log(`Backend process exited with code ${code}`);
+    });
+  } catch (err) {
+    console.error('❌ Failed to spawn backend process:', err);
+  }
 }
 
 function createWindow() {
@@ -35,10 +41,7 @@ function createWindow() {
 
   // ✅ Loads the built React frontend from /dist
   mainWindow.loadFile(path.join(__dirname, '..', 'dist', 'index.html'));
-
-  // Optional: open DevTools to debug localStorage, CORS, etc.
-  mainWindow.webContents.openDevTools();
-
+  // mainWindow.webContents.openDevTools();
   console.log('🌐 Frontend loaded from dist/index.html');
 }
 

@@ -9,7 +9,7 @@ from typing import List, Dict, Any
 import pandas as pd
 from fastapi import HTTPException
 import openai
-from config.config_manager import load_yaml
+from config.config_manager import load_yaml, CONFIG_DIR
 from services.konom_query import fetch_data
 from services.data_parser import parse_response_json
 from services.preprocess import preprocess_dataframe
@@ -76,9 +76,9 @@ def run_deep_dive_agent(
                 df[col] = df[col].apply(lambda x: f"{x}" if not x else (x if x.endswith('%') else f"{float(x.replace('%','')):.2f}%" if isinstance(x, str) and x.replace('%','').replace('.','',1).replace('+','',1).replace('-','',1).isdigit() else x))
 
     # 4. Load configs
-    system_def = load_yaml(os.path.join('configs', 'system_definition.yaml'))
-    deep_dive_config = load_yaml(os.path.join('configs', 'deep_dive_config.yaml'))
-    metric_config = load_yaml(os.path.join('configs', 'metric_config.yaml'))
+    system_def = load_yaml(os.path.join(CONFIG_DIR, 'system_definition.yaml'))
+    deep_dive_config = load_yaml(os.path.join(CONFIG_DIR, 'deep_dive_config.yaml'))
+    metric_config = load_yaml(os.path.join(CONFIG_DIR, 'metric_config.yaml'))
     metric_defs = {m['name']: m.get('definition', '') for m in metric_config.get('metrics', [])}
 
     # 5. Segment-level analysis

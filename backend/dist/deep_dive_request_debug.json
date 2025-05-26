@@ -1,0 +1,712 @@
+{
+  "namespace": "Header Bidder",
+  "measures": [
+    "Bid Price (HB Rendered Ad)",
+    "% Control Bucket (wrt tc1)",
+    "% NED Sent ",
+    "Profit (HB Rendered Ad)",
+    "% BSS blocking",
+    "Non-BSS Block %",
+    "Total Requests Sent",
+    "Valid Bid Rate (HB Provider Response)",
+    "Impressions Delivered (HB Rendered Ad)",
+    "Bidder Win Rate (1K)",
+    "Bidder Rev Rate (10M)",
+    "MNET Rev Rate (10M)",
+    "% Marking Rev Loss "
+  ],
+  "rows": [
+    {
+      "dimension": "Provider Group Name",
+      "outputName": "Provider Group Name",
+      "threshold": 5
+    },
+    {
+      "dimension": "Provider Name",
+      "outputName": "Provider Name",
+      "threshold": "10"
+    },
+    {
+      "dimension": "UID Sent - Incremental",
+      "outputName": "UID Sent - Incremental",
+      "threshold": "10"
+    },
+    {
+      "dimension": "Country Code",
+      "outputName": "Country Code",
+      "threshold": "10"
+    },
+    {
+      "dimension": "Experiment Tokens",
+      "outputName": "Experiment Tokens",
+      "threshold": 5
+    }
+  ],
+  "columns": [],
+  "times": [
+    {
+      "startTime": "2025-05-20T00:00:00.000Z",
+      "endTime": "2025-05-22T00:00:00.000Z"
+    }
+  ],
+  "filters": [
+    {
+      "type": "in",
+      "filterType": "list",
+      "dimension": "Provider Group Name",
+      "data": [
+        "Zeta"
+      ],
+      "values": [
+        "Zeta"
+      ]
+    },
+    {
+      "type": "regex",
+      "filterType": "regex",
+      "dimension": "Experiment Tokens",
+      "template": "STARTS_WITH",
+      "value": "lessCtrl",
+      "pattern": "^(?i)lessCtrl",
+      "data": "^(?i)lessCtrl"
+    }
+  ],
+  "filteredMeasures": [
+    {
+      "alias": "Bid Price (HB Rendered Ad)",
+      "outputName": "Bid Price (HB Rendered Ad)"
+    },
+    {
+      "alias": "Profit (HB Rendered Ad)",
+      "outputName": "Profit (HB Rendered Ad)"
+    },
+    {
+      "alias": "Responses (HB Provider Response)",
+      "filters": [
+        {
+          "item": {
+            "type": "dimensions",
+            "dataType": "string",
+            "id": "To Consider",
+            "label": "To Consider",
+            "data": {
+              "type": "in",
+              "filterType": "include",
+              "dimension": "To Consider",
+              "data": [
+                "1"
+              ],
+              "values": [
+                "1"
+              ]
+            }
+          },
+          "selectedItems": [
+            "1"
+          ]
+        },
+        {
+          "item": {
+            "type": "dimensions",
+            "dataType": "string",
+            "id": "dbf",
+            "label": "dbf",
+            "data": {
+              "type": "in",
+              "filterType": "list",
+              "dimension": "dbf",
+              "data": [
+                "1"
+              ],
+              "values": [
+                "1"
+              ]
+            }
+          },
+          "selectedItems": [
+            "1"
+          ]
+        }
+      ],
+      "outputName": "Total Requests Sent"
+    },
+    {
+      "alias": "Valid Bid Rate (HB Provider Response)",
+      "outputName": "Valid Bid Rate (HB Provider Response)"
+    },
+    {
+      "alias": "Impressions Delivered (HB Rendered Ad)",
+      "outputName": "Impressions Delivered (HB Rendered Ad)"
+    }
+  ],
+  "histogramDimensions": [],
+  "customMeasures": [
+    {
+      "formula": "${Control Bucket ( HB Provider Response ) } /${Responses toconsider=1,dbf=1 (HB Provider Response)} *100",
+      "outputName": "% Control Bucket (wrt tc1)",
+      "customMeasureMetrics": [
+        {
+          "outputName": "Control Bucket ( HB Provider Response ) ",
+          "alias": "Responses (HB Provider Response)",
+          "filterIdList": [
+            "1-0-0"
+          ]
+        },
+        {
+          "alias": "Responses toconsider=1,dbf=1 (HB Provider Response)",
+          "outputName": "Responses toconsider=1,dbf=1 (HB Provider Response)"
+        }
+      ]
+    },
+    {
+      "formula": "100*${Sparse Traffic sent (NED) ( HB Provider Response ) } /${Total Requests Sent ( HB Provider Response ) } ",
+      "outputName": "% NED Sent ",
+      "customMeasureMetrics": [
+        {
+          "outputName": "Sparse Traffic sent (NED) ( HB Provider Response ) ",
+          "alias": "Responses (HB Provider Response)",
+          "filterIdList": [
+            "1-1-0"
+          ]
+        },
+        {
+          "outputName": "Total Requests Sent ( HB Provider Response ) ",
+          "alias": "Responses (HB Provider Response)",
+          "filterIdList": [
+            "1-1-1"
+          ]
+        }
+      ]
+    },
+    {
+      "formula": "100*${BSS Block ( HB Provider Response ) } /${Incoming Requests ( HB Provider Response ) } ",
+      "outputName": "% BSS blocking",
+      "customMeasureMetrics": [
+        {
+          "outputName": "BSS Block ( HB Provider Response ) ",
+          "alias": "Responses (HB Provider Response)",
+          "filterIdList": [
+            "1-2-0"
+          ]
+        },
+        {
+          "outputName": "Incoming Requests ( HB Provider Response ) ",
+          "alias": "Responses (HB Provider Response)",
+          "filterIdList": [
+            "1-2-1"
+          ]
+        }
+      ]
+    },
+    {
+      "formula": "(${Incoming Requests ( HB Provider Response ) } -(${BSS Block ( HB Provider Response ) } +${Total Requests Sent ( HB Provider Response ) } ))*100/${Incoming Requests ( HB Provider Response ) } ",
+      "outputName": "Non-BSS Block %",
+      "customMeasureMetrics": [
+        {
+          "outputName": "Incoming Requests ( HB Provider Response ) ",
+          "alias": "Responses (HB Provider Response)",
+          "filterIdList": [
+            "1-3-0"
+          ]
+        },
+        {
+          "outputName": "BSS Block ( HB Provider Response ) ",
+          "alias": "Responses (HB Provider Response)",
+          "filterIdList": [
+            "1-3-1"
+          ]
+        },
+        {
+          "outputName": "Total Requests Sent ( HB Provider Response ) ",
+          "alias": "Responses (HB Provider Response)",
+          "filterIdList": [
+            "1-3-2"
+          ]
+        },
+        {
+          "outputName": "Incoming Requests ( HB Provider Response ) ",
+          "alias": "Responses (HB Provider Response)",
+          "filterIdList": [
+            "1-3-3"
+          ]
+        }
+      ]
+    },
+    {
+      "formula": "1000 * 100 * ${Impressions Delivered (HB Rendered Ad)} /${Total Requests Sent ( HB Provider Response ) } ",
+      "outputName": "Bidder Win Rate (1K)",
+      "customMeasureMetrics": [
+        {
+          "alias": "Impressions Delivered (HB Rendered Ad)",
+          "outputName": "Impressions Delivered (HB Rendered Ad)"
+        },
+        {
+          "outputName": "Total Requests Sent ( HB Provider Response ) ",
+          "alias": "Responses (HB Provider Response)",
+          "filterIdList": [
+            "1-4-1"
+          ]
+        }
+      ]
+    },
+    {
+      "formula": "10000000*${Bid Price (HB Rendered Ad)} /( ${Total Requests Sent ( HB Provider Response ) } )",
+      "outputName": "Bidder Rev Rate (10M)",
+      "customMeasureMetrics": [
+        {
+          "alias": "Bid Price (HB Rendered Ad)",
+          "outputName": "Bid Price (HB Rendered Ad)"
+        },
+        {
+          "outputName": "Total Requests Sent ( HB Provider Response ) ",
+          "alias": "Responses (HB Provider Response)",
+          "filterIdList": [
+            "1-5-1"
+          ]
+        }
+      ]
+    },
+    {
+      "formula": "10000000*${Bid Price (HB Rendered Ad)} /${Responses (HB Provider Response)} ",
+      "outputName": "MNET Rev Rate (10M)",
+      "customMeasureMetrics": [
+        {
+          "alias": "Bid Price (HB Rendered Ad)",
+          "outputName": "Bid Price (HB Rendered Ad)"
+        },
+        {
+          "alias": "Responses (HB Provider Response)",
+          "outputName": "Responses (HB Provider Response)"
+        }
+      ]
+    },
+    {
+      "formula": "100*${Mark block bid price exc ned ( HB Rendered Ad ) } /${Marking bid price exc ned ( HB Rendered Ad ) } ",
+      "outputName": "% Marking Rev Loss ",
+      "customMeasureMetrics": [
+        {
+          "outputName": "Mark block bid price exc ned ( HB Rendered Ad ) ",
+          "alias": "Bid Price (HB Rendered Ad)",
+          "filterIdList": [
+            "1-7-0"
+          ]
+        },
+        {
+          "outputName": "Marking bid price exc ned ( HB Rendered Ad ) ",
+          "alias": "Bid Price (HB Rendered Ad)",
+          "filterIdList": [
+            "1-7-1"
+          ]
+        }
+      ]
+    }
+  ],
+  "timeZone": "Asia/Kolkata",
+  "isTimeRelative": false,
+  "shouldEnableRegex": true,
+  "filterGroups": [],
+  "orderingMetric": "Bid Price (HB Rendered Ad)",
+  "isAscending": false,
+  "queryId": "s_fbb478b0-3644-11f0-b04f-f5620a2b16db_0",
+  "metrics": [
+    {
+      "alias": "Bid Price (HB Rendered Ad)",
+      "outputName": "Bid Price (HB Rendered Ad)"
+    },
+    {
+      "alias": "Profit (HB Rendered Ad)",
+      "outputName": "Profit (HB Rendered Ad)"
+    },
+    {
+      "alias": "Responses (HB Provider Response)",
+      "outputName": "Total Requests Sent",
+      "filterIdList": [
+        "2"
+      ]
+    },
+    {
+      "alias": "Valid Bid Rate (HB Provider Response)",
+      "outputName": "Valid Bid Rate (HB Provider Response)"
+    },
+    {
+      "alias": "Impressions Delivered (HB Rendered Ad)",
+      "outputName": "Impressions Delivered (HB Rendered Ad)"
+    }
+  ],
+  "partialFilters": {
+    "2": [
+      {
+        "type": "in",
+        "filterType": "include",
+        "dimension": "To Consider",
+        "data": [
+          "1"
+        ],
+        "values": [
+          "1"
+        ]
+      },
+      {
+        "type": "in",
+        "filterType": "list",
+        "dimension": "dbf",
+        "data": [
+          "1"
+        ],
+        "values": [
+          "1"
+        ]
+      }
+    ],
+    "1-0-0": [
+      {
+        "type": "in",
+        "filterType": "include",
+        "dimension": "To Consider",
+        "data": [
+          "1"
+        ],
+        "values": [
+          "1"
+        ]
+      },
+      {
+        "type": "in",
+        "filterType": "include",
+        "dimension": "BSS Algorithm Bucket",
+        "data": [
+          "MARK_BLOCK",
+          "MARK_NOT_BLOCK"
+        ],
+        "values": [
+          "MARK_BLOCK",
+          "MARK_NOT_BLOCK"
+        ]
+      },
+      {
+        "type": "in",
+        "filterType": "include",
+        "dimension": "dbf",
+        "data": [
+          "1"
+        ],
+        "values": [
+          "1"
+        ]
+      }
+    ],
+    "1-1-0": [
+      {
+        "type": "in",
+        "filterType": "list",
+        "dimension": "Bidder Selection NED",
+        "data": [
+          "1"
+        ],
+        "values": [
+          "1"
+        ]
+      },
+      {
+        "type": "in",
+        "filterType": "list",
+        "dimension": "To Consider",
+        "data": [
+          "1"
+        ],
+        "values": [
+          "1"
+        ]
+      },
+      {
+        "type": "in",
+        "filterType": "include",
+        "dimension": "dbf",
+        "data": [
+          "1"
+        ],
+        "values": [
+          "1"
+        ]
+      }
+    ],
+    "1-1-1": [
+      {
+        "type": "in",
+        "filterType": "include",
+        "dimension": "To Consider",
+        "data": [
+          "1"
+        ],
+        "values": [
+          "1"
+        ]
+      },
+      {
+        "type": "in",
+        "filterType": "list",
+        "dimension": "dbf",
+        "data": [
+          "1"
+        ],
+        "values": [
+          "1"
+        ]
+      }
+    ],
+    "1-2-0": [
+      {
+        "type": "in",
+        "filterType": "include",
+        "dimension": "No Bid reason (Server Side)",
+        "data": [
+          "BIDDER_SELECTION"
+        ],
+        "values": [
+          "BIDDER_SELECTION"
+        ]
+      },
+      {
+        "type": "in",
+        "filterType": "include",
+        "dimension": "dbf",
+        "data": [
+          "1"
+        ],
+        "values": [
+          "1"
+        ]
+      }
+    ],
+    "1-2-1": [
+      {
+        "type": "in",
+        "filterType": "list",
+        "dimension": "dbf",
+        "data": [
+          "1"
+        ],
+        "values": [
+          "1"
+        ]
+      }
+    ],
+    "1-3-0": [
+      {
+        "type": "in",
+        "filterType": "list",
+        "dimension": "dbf",
+        "data": [
+          "1"
+        ],
+        "values": [
+          "1"
+        ]
+      }
+    ],
+    "1-3-1": [
+      {
+        "type": "in",
+        "filterType": "include",
+        "dimension": "No Bid reason (Server Side)",
+        "data": [
+          "BIDDER_SELECTION"
+        ],
+        "values": [
+          "BIDDER_SELECTION"
+        ]
+      },
+      {
+        "type": "in",
+        "filterType": "include",
+        "dimension": "dbf",
+        "data": [
+          "1"
+        ],
+        "values": [
+          "1"
+        ]
+      }
+    ],
+    "1-3-2": [
+      {
+        "type": "in",
+        "filterType": "include",
+        "dimension": "To Consider",
+        "data": [
+          "1"
+        ],
+        "values": [
+          "1"
+        ]
+      },
+      {
+        "type": "in",
+        "filterType": "list",
+        "dimension": "dbf",
+        "data": [
+          "1"
+        ],
+        "values": [
+          "1"
+        ]
+      }
+    ],
+    "1-3-3": [
+      {
+        "type": "in",
+        "filterType": "list",
+        "dimension": "dbf",
+        "data": [
+          "1"
+        ],
+        "values": [
+          "1"
+        ]
+      }
+    ],
+    "1-4-1": [
+      {
+        "type": "in",
+        "filterType": "include",
+        "dimension": "To Consider",
+        "data": [
+          "1"
+        ],
+        "values": [
+          "1"
+        ]
+      },
+      {
+        "type": "in",
+        "filterType": "list",
+        "dimension": "dbf",
+        "data": [
+          "1"
+        ],
+        "values": [
+          "1"
+        ]
+      }
+    ],
+    "1-5-1": [
+      {
+        "type": "in",
+        "filterType": "include",
+        "dimension": "To Consider",
+        "data": [
+          "1"
+        ],
+        "values": [
+          "1"
+        ]
+      },
+      {
+        "type": "in",
+        "filterType": "list",
+        "dimension": "dbf",
+        "data": [
+          "1"
+        ],
+        "values": [
+          "1"
+        ]
+      }
+    ],
+    "1-7-0": [
+      {
+        "type": "in",
+        "filterType": "include",
+        "dimension": "BSS Algorithm Bucket",
+        "data": [
+          "MARK_BLOCK"
+        ],
+        "values": [
+          "MARK_BLOCK"
+        ]
+      },
+      {
+        "type": "not",
+        "filterType": "exclude",
+        "data": [
+          "1"
+        ],
+        "field": {
+          "dimension": "Bidder Selection NED",
+          "values": [
+            "1"
+          ],
+          "type": "in",
+          "data": [
+            "1"
+          ],
+          "filterType": "exclude"
+        }
+      }
+    ],
+    "1-7-1": [
+      {
+        "type": "in",
+        "filterType": "list",
+        "dimension": "BSS Algorithm Bucket",
+        "data": [
+          "MARK_BLOCK",
+          "MARK_NOT_BLOCK"
+        ],
+        "values": [
+          "MARK_BLOCK",
+          "MARK_NOT_BLOCK"
+        ]
+      },
+      {
+        "type": "not",
+        "filterType": "exclude",
+        "data": [
+          "1"
+        ],
+        "field": {
+          "dimension": "Bidder Selection NED",
+          "values": [
+            "1"
+          ],
+          "type": "in",
+          "data": [
+            "1"
+          ],
+          "filterType": "exclude"
+        }
+      }
+    ]
+  },
+  "source": "reporting",
+  "view": "report",
+  "dimensionObjectList": [
+    {
+      "dimension": "Provider Group Name",
+      "outputName": "Provider Group Name",
+      "threshold": 5
+    },
+    {
+      "dimension": "Experiment Tokens",
+      "outputName": "Experiment Tokens",
+      "threshold": 5
+    },
+    {
+      "dimension": "Provider Name",
+      "outputName": "Provider Name",
+      "threshold": "10"
+    },
+    {
+      "dimension": "UID Sent - Incremental",
+      "outputName": "UID Sent - Incremental",
+      "threshold": "10"
+    },
+    {
+      "dimension": "Country Code",
+      "outputName": "Country Code",
+      "threshold": "10"
+    }
+  ],
+  "startTime": "2025-05-20 00:00:00",
+  "endTime": "2025-05-22 00:00:00"
+}

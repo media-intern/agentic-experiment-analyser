@@ -9,6 +9,7 @@ backend/.env
 # Node + Vite files
 node_modules/
 dist/
+!/backend/dist/
 .vscode/
 
 # Mac/OS & system files

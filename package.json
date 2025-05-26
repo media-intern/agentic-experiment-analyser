@@ -22,7 +22,7 @@
     "files": [
       "dist/**/*",
       "electron/**/*",
-      "backend/dist/main.exe",
+      "backend/dist/**",
       "backend/.agentic_ai_config/**/*",
       "public/**/*",
       "package.json"

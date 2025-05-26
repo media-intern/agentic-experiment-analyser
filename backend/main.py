@@ -33,4 +33,8 @@ app.include_router(deep_dive_router, prefix="/api")
 
 # @app.get("/ping")
 # def ping():
-#     return {"message": "pong"} 
+#     return {"message": "pong"}
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="127.0.0.1", port=8000) 
