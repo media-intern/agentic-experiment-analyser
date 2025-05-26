@@ -7,12 +7,11 @@ const path = require('path');
 let backendProcess = null;
 
 function startBackendServer() {
-  const backendPath = path.join(__dirname, '..', 'backend');
-  const command = 'uvicorn';
-  const args = ['main:app', '--host', '127.0.0.1', '--port', '8000'];
-  console.log('🛠️ Starting backend from:', backendPath);
+  // Path to the PyInstaller-built backend executable
+  const backendExe = path.join(__dirname, '..', 'backend', 'dist', 'main.exe');
+  console.log('🛠️ Starting backend from:', backendExe);
 
-  backendProcess = spawn(command, args, { cwd: backendPath, shell: true });
+  backendProcess = spawn(backendExe, [], { cwd: path.dirname(backendExe) });
 
   backendProcess.stdout.on('data', (data) => {
     console.log(`[Backend] ${data}`);

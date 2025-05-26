@@ -1,5 +1,5 @@
 {
-  "name": "minimal-tailwind-app",
+  "name": "media-deep-dive-agent",
   "version": "1.0.0",
   "main": "electron/main.js",
   "scripts": {
@@ -10,7 +10,8 @@
     "dist": "electron-builder"
   },
   "build": {
-    "appId": "com.agentic.app",
+    "productName": "Media Deep-Dive Agent",
+    "appId": "com.agentic.deepdive",
     "win": {
       "target": "nsis",
       "icon": "icon.ico"
@@ -21,7 +22,8 @@
     "files": [
       "dist/**/*",
       "electron/**/*",
-      "backend/**/*",
+      "backend/dist/main.exe",
+      "backend/.agentic_ai_config/**/*",
       "public/**/*",
       "package.json"
     ],
