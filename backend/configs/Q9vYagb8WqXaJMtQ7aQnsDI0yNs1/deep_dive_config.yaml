@@ -1,0 +1,12 @@
+valid_dimensions:
+- Provider Name
+- Integration Type
+- Device Type (as in HB Reports)
+- Data center
+- Customer Name
+- UID Sent - Incremental
+- Cookie Flag
+- New Browser Name
+- New OS Name
+- Country Code
+- State

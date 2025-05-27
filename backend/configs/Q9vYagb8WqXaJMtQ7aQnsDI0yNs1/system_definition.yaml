@@ -1,0 +1,12 @@
+BSS: |
+  The Bidder Selection System (BSS) is an internal service of Media.net's Ad Exchange (MNet). 
+  It sits between incoming ad requests from Supply Side Partners (SSPs) and the bidding process involving Demand Side Partners (DSPs).
+  DSPs are also called bidders, and they are the ones who bid for the ad slots.
+
+  BSS is configured at the Data Center level. Its core function is to intelligently block low-quality requests (typically ~70%) and forward only the top 30% of high-quality traffic to bidders. 
+  This improves the Valid Bid Rate, reduces unnecessary DSP load, and ensures optimal monetization.
+
+  The remaining traffic goes through an auction, where multiple bidders bid for a particular ad slot. Media.net then conducts an internal auction and decides the winning bid depending on the 
+  highest bid price received. The remaining bids are discarded and the highest bidder wins the ad slot. 
+  
+  Media.net takes a cut from the winning bid and passes the ad to the SSP.

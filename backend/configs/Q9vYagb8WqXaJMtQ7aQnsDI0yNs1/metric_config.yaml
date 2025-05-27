@@ -1,0 +1,37 @@
+Profit (HB Rendered Ad):
+  formula: Bid Price - Publisher Revenue
+  description: Profit made by Media.net
+
+Bid Price (HB Rendered Ad):
+  description: Amount spent by the Provider (Bidder / DSP), also called spends
+
+Bidder Rev Rate (10M):
+  formula: 10M X Bid Price (HB Rendered Ad) / Total Requests Sent
+  description: It’s the revenue per million requests sent to the bidder
+
+Bidder Win Rate (1K):
+  formula: 100000 x Impressions Delivered / Total Requests Sent
+  description: It’s the impressions delivered per 100000 requests sent to the bidder
+
+Valid Bid Rate (HB Provider Response):
+  formula: Valid Responses / Total Requests Sent
+  description: ""
+
+MNET Rev Rate (10M):
+  formula: 10M x Bid Price (HB Rendered Ad)
+  description: It’s amount spent per 10 millions requests
+
+Total Requests Sent (HB Provider Response):
+  description: Total requests sent to the bidder
+
+Total Incoming Requests ( HB Provider Response ):
+  description: ""
+
+Non-BSS Block %:
+  description: Requests blocked by systems other than BSS. Compare with other buckets to evaluate impact on profits.
+
+BSS blocking %:
+  description: Requests blocked by BSS. Compare with other buckets to evaluate impact on profits.
+
+Sparse %:
+  description: Indecisive traffic—BSS couldn’t determine if request should be blocked or not.

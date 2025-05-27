@@ -1,7 +1,7 @@
-from fastapi import APIRouter, UploadFile, HTTPException
+from fastapi import APIRouter, UploadFile, HTTPException, Form, Query
 import os
 from utils.file_saver import save_uploaded_file_sync
-from config.config_manager import CONFIG_DIR, check_config_files_exist
+from config.config_manager import CONFIG_DIR
 
 router = APIRouter()
 
@@ -12,20 +12,43 @@ REQUIRED_FILES = [
 ]
 
 @router.get("/config-status")
-async def get_config_status():
-    """Check if all required config files are present."""
-    return {"config_complete": check_config_files_exist()}
+async def get_config_status(user_id: str = Query(...)):
+    """Check if all required config files are present for a user."""
+    bucket_name = os.getenv("GCS_BUCKET_NAME")
+    user_config_dir = f"configs/{user_id}"
+    all_exist = True
+    for fname in REQUIRED_FILES:
+        if bucket_name:
+            from google.cloud import storage
+            storage_client = storage.Client()
+            bucket = storage_client.bucket(bucket_name)
+            blob = bucket.blob(f"{user_config_dir}/{fname}")
+            print(f"[DEBUG] Checking GCS for: {user_config_dir}/{fname}")
+            if not blob.exists():
+                print(f"[DEBUG] MISSING in GCS: {user_config_dir}/{fname}")
+                all_exist = False
+                break
+        else:
+            full_path = os.path.join(user_config_dir, fname)
+            print(f"[DEBUG] Checking local for: {full_path}")
+            if not os.path.exists(full_path):
+                print(f"[DEBUG] MISSING locally: {full_path}")
+                all_exist = False
+                break
+    print(f"[DEBUG] config_complete: {all_exist}")
+    return {"config_complete": all_exist}
 
 @router.post("/upload-config")
-async def upload_config(file: UploadFile):
+async def upload_config(file: UploadFile, user_id: str = Form(...)):
     try:
-        print(f"[UPLOAD CONFIG] Received file: {file.filename}")
+        print(f"[UPLOAD CONFIG] Received file: {file.filename} for user {user_id}")
         if file.filename not in REQUIRED_FILES:
             raise HTTPException(status_code=400, detail=f"Unexpected config file: {file.filename}")
-        
-        saved_path = save_uploaded_file_sync(file, CONFIG_DIR)
+        bucket_name = os.getenv("GCS_BUCKET_NAME")
+        user_config_dir = f"configs/{user_id}"
+        saved_path = save_uploaded_file_sync(file, user_config_dir, bucket_name)
         print(f"[UPLOAD CONFIG] File saved to: {saved_path}")
-        return {"message": f"File {file.filename} uploaded successfully."}
+        return {"message": f"File {file.filename} uploaded successfully for user {user_id}."}
     except Exception as e:
         print(f"[UPLOAD CONFIG] Error: {e}")
         raise HTTPException(status_code=500, detail=f"Upload failed: {e}")

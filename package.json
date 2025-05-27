@@ -33,7 +33,9 @@
       {
         "from": "backend/.env",
         "to": "backend/.env",
-        "filter": ["**/*"]
+        "filter": [
+          "**/*"
+        ]
       },
       {
         "from": "backend/dist",
@@ -43,6 +45,7 @@
   },
   "dependencies": {
     "@heroicons/react": "^2.2.0",
+    "firebase": "^11.8.1",
     "html2pdf.js": "^0.10.3",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",

@@ -1,6 +1,7 @@
 import React from 'react';
-import { NavLink, useNavigate } from 'react-router-dom';
+import { NavLink, useNavigate, Link } from 'react-router-dom';
 import logo from './assets/logo.png';
+import { useAuth } from './contexts/AuthContext';
 
 const navLinks = [
   { to: '/setup', label: 'Setup' },
@@ -12,7 +13,8 @@ const navLinks = [
 
 const LOCAL_STORAGE_KEY = 'deepDiveResults';
 
-const Navbar = () => {
+const Navbar: React.FC = () => {
+  const { user, signInWithGoogle, logout } = useAuth();
   const navigate = useNavigate();
 
   const handleNewExperiment = () => {
@@ -21,34 +23,25 @@ const Navbar = () => {
   };
 
   return (
-    <nav className="w-full bg-white shadow fixed top-0 left-0 z-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-        <div className="flex items-center">
-          <img src={logo} alt="Logo" className="h-10 w-auto mr-2" />
-        </div>
-        <div className="flex items-center space-x-6">
-          {navLinks.map((link) =>
-            <NavLink
-              key={link.to}
-              to={link.to}
-              className={({ isActive }) =>
-                `text-lg font-medium px-2 py-1 rounded transition-colors duration-200 ${
-                  isActive
-                    ? 'text-indigo-700 bg-indigo-100'
-                    : 'text-gray-700 hover:text-indigo-700 hover:bg-indigo-50'
-                }`
-              }
-            >
-              {link.label}
-            </NavLink>
-          )}
-          <button
-            onClick={handleNewExperiment}
-            className="ml-4 px-4 py-2 rounded-lg bg-indigo-700 text-white font-bold shadow hover:bg-indigo-800 transition"
-          >
-            Analyse New Experiment
-          </button>
-        </div>
+    <nav className="fixed top-0 left-0 w-full bg-white shadow z-10 flex items-center justify-between px-8 py-3">
+      <div className="flex items-center space-x-4">
+        <Link to="/upload" className="font-bold text-lg text-blue-600">
+          Media Deep-Dive Agent
+        </Link>
+        <Link to="/upload" className="text-gray-700 hover:text-blue-600">Upload</Link>
+        <Link to="/results" className="text-gray-700 hover:text-blue-600">Results</Link>
+        <Link to="/deep-dive" className="text-gray-700 hover:text-blue-600">Deep Dive</Link>
+        <Link to="/dashboard" className="text-gray-700 hover:text-blue-600">Dashboard</Link>
+      </div>
+      <div>
+        {user ? (
+          <>
+            <span className="mr-4 text-gray-700">{user.displayName || user.email}</span>
+            <button onClick={logout} className="bg-red-500 text-white px-3 py-1 rounded">Logout</button>
+          </>
+        ) : (
+          <button onClick={signInWithGoogle} className="bg-blue-500 text-white px-3 py-1 rounded">Login with Google</button>
+        )}
       </div>
     </nav>
   );

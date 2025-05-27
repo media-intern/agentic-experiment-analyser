@@ -7,14 +7,20 @@ import DeepDivePage from './DeepDivePage';
 import DashboardPage from './DashboardPage';
 import Navbar from './Navbar';
 import { checkConfigStatus } from './lib/api';
+import { useAuth } from './contexts/AuthContext';
 
 const Router = () => {
   const [isSetupComplete, setIsSetupComplete] = useState<boolean | null>(null);
+  const { user, loading } = useAuth();
 
   useEffect(() => {
+    if (!user) {
+      setIsSetupComplete(false);
+      return;
+    }
     const checkConfig = async () => {
       try {
-        const { config_complete } = await checkConfigStatus();
+        const { config_complete } = await checkConfigStatus(user.uid);
         setIsSetupComplete(config_complete);
       } catch (error) {
         console.error('Failed to check config status:', error);
@@ -22,9 +28,9 @@ const Router = () => {
       }
     };
     checkConfig();
-  }, []);
+  }, [user]);
 
-  if (isSetupComplete === null) return null; // avoid flicker
+  if (loading || isSetupComplete === null) return null;
 
   return (
     <HashRouter>
