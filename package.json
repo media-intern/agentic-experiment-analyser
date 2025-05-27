@@ -25,13 +25,19 @@
       "backend/dist/**",
       "backend/.agentic_ai_config/**/*",
       "public/**/*",
-      "package.json"
+      "package.json",
+      "backend/dist/main.exe",
+      "backend/dist/main"
     ],
     "extraResources": [
       {
         "from": "backend/.env",
         "to": "backend/.env",
         "filter": ["**/*"]
+      },
+      {
+        "from": "backend/dist",
+        "to": "backend/dist"
       }
     ]
   },

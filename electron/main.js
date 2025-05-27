@@ -9,8 +9,8 @@ let backendProcess = null;
 function startBackendServer() {
   const isPackaged = app.isPackaged;
   const backendExe = isPackaged
-    ? path.join(process.resourcesPath, 'backend', 'dist', 'main.exe')
-    : path.join(__dirname, '..', 'backend', 'dist', 'main.exe');
+    ? path.join(process.resourcesPath, 'backend', 'dist', process.platform === 'win32' ? 'main.exe' : 'main')
+    : path.join(__dirname, '..', 'backend', 'dist', process.platform === 'win32' ? 'main.exe' : 'main');
   console.log('🛠️ Attempting to start backend from:', backendExe);
 
   try {
@@ -21,14 +21,14 @@ function startBackendServer() {
     });
 
     backendProcess.stderr.on('data', (data) => {
-      console.error(`[Backend ERROR] ${data}`);
+      console.error(`[Backend Error] ${data}`);
     });
 
     backendProcess.on('close', (code) => {
-      console.log(`Backend process exited with code ${code}`);
+      console.log(`[Backend] Process exited with code ${code}`);
     });
-  } catch (err) {
-    console.error('❌ Failed to spawn backend process:', err);
+  } catch (error) {
+    console.error('Failed to start backend:', error);
   }
 }
 
