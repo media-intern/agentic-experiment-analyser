@@ -1,6 +1,7 @@
 import React, { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { CloudArrowUpIcon, Cog6ToothIcon, TableCellsIcon } from '@heroicons/react/24/outline';
+import { uploadConfigFile } from './lib/api';
 
 const configFiles = [
   { key: 'metricConfig', label: "Metric Config YAML", icon: <TableCellsIcon className="h-7 w-7 text-indigo-500" /> },
@@ -28,21 +29,11 @@ const SetupPage = () => {
   const uploadFilesToBackend = async () => {
     for (const [key, file] of Object.entries(files)) {
       if (file) {
-        const formData = new FormData();
-        formData.append("file", file);
         try {
-          const response = await fetch("http://localhost:8000/api/upload-config", {
-            method: "POST",
-            body: formData,
-          });
-          if (!response.ok) {
-            const errorText = await response.text();
-            console.error(`❌ Failed to upload ${key}:`, errorText);
-          } else {
-            console.log(`✅ Successfully uploaded ${key}`);
-          }
-        } catch (error) {
-          console.error(`❌ Error uploading ${key}:`, error);
+          await uploadConfigFile(file, '');
+          console.log(`✅ Successfully uploaded ${key}`);
+        } catch (error: any) {
+          console.error(`❌ Failed to upload ${key}:`, error.message || error);
         }
       }
     }
