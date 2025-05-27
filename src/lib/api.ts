@@ -5,11 +5,19 @@
 
 // Dynamically detect if running in dev or in production build
 const isDev = import.meta.env.MODE === "development";
-const BASE_URL = isDev
+const BASE_URL = isDev 
   ? "http://localhost:8000/api"
-  : "http://127.0.0.1:8000/api"; // FastAPI backend runs locally inside the app
+  : import.meta.env.VITE_API_URL || "http://localhost:8000/api";
 
 console.log("🔧 API BASE_URL:", BASE_URL);
+
+export async function checkConfigStatus() {
+  const response = await fetch(`${BASE_URL}/config-status`);
+  if (!response.ok) {
+    throw new Error(`Failed to check config status: ${response.status}`);
+  }
+  return await response.json();
+}
 
 export async function sendRequestJson(file: File) {
   const formData = new FormData();

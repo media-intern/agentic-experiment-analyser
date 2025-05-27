@@ -22,18 +22,13 @@
       "threshold": 5
     },
     {
-      "dimension": "Provider Name",
-      "outputName": "Provider Name",
+      "dimension": "Data center",
+      "outputName": "Data center",
       "threshold": "10"
     },
     {
-      "dimension": "UID Sent - Incremental",
-      "outputName": "UID Sent - Incremental",
-      "threshold": "10"
-    },
-    {
-      "dimension": "Country Code",
-      "outputName": "Country Code",
+      "dimension": "Cookie Flag",
+      "outputName": "Cookie Flag",
       "threshold": "10"
     },
     {
@@ -692,18 +687,13 @@
       "threshold": 5
     },
     {
-      "dimension": "Provider Name",
-      "outputName": "Provider Name",
+      "dimension": "Data center",
+      "outputName": "Data center",
       "threshold": "10"
     },
     {
-      "dimension": "UID Sent - Incremental",
-      "outputName": "UID Sent - Incremental",
-      "threshold": "10"
-    },
-    {
-      "dimension": "Country Code",
-      "outputName": "Country Code",
+      "dimension": "Cookie Flag",
+      "outputName": "Cookie Flag",
       "threshold": "10"
     }
   ],

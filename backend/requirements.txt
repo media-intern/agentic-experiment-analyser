@@ -7,3 +7,10 @@ pyyaml
 python-dotenv
 python-multipart
 aiofiles
+langchain
+langchain-groq
+langgraph
+tabulate
+langchain-openai
+langchain-community
+google-cloud-storage

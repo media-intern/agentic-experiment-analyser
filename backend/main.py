@@ -1,40 +1,34 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from routes.config_routes import router as config_router
-from routes.analyze_routes import router as analyze_router
-from routes.deep_dive_routes import router as deep_dive_router
-from config.env_loader import load_env_vars
 import os
 from dotenv import load_dotenv
-load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), ".env"))
 
-# load_dotenv()
+# Load environment variables
+load_dotenv()
 
 app = FastAPI()
 
-@app.get("/api/ping")
-def ping():
-    return {"message": "pong"}
-
-# Enable CORS for all origins
+# Configure CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["*"],  # In production, replace with your frontend URL
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-load_env_vars()
+# Import and include routers
+from routes import config_routes, analysis_routes, deep_dive_routes
 
-app.include_router(config_router, prefix="/api")
-app.include_router(analyze_router, prefix="/api")
-app.include_router(deep_dive_router, prefix="/api")
+app.include_router(config_routes.router, prefix="/api")
+app.include_router(analysis_routes.router, prefix="/api")
+app.include_router(deep_dive_routes.router, prefix="/api")
 
-# @app.get("/ping")
-# def ping():
-#     return {"message": "pong"}
+@app.get("/api/ping")
+async def ping():
+    return {"status": "ok"}
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="127.0.0.1", port=8000) 
+    port = int(os.getenv("PORT", 8000))
+    uvicorn.run(app, host="0.0.0.0", port=port) 

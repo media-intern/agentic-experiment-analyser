@@ -6,13 +6,22 @@ import ResultsPage from './ResultsPage';
 import DeepDivePage from './DeepDivePage';
 import DashboardPage from './DashboardPage';
 import Navbar from './Navbar';
+import { checkConfigStatus } from './lib/api';
 
 const Router = () => {
   const [isSetupComplete, setIsSetupComplete] = useState<boolean | null>(null);
 
   useEffect(() => {
-    const configDone = localStorage.getItem('agentic_config_done');
-    setIsSetupComplete(configDone === 'true');
+    const checkConfig = async () => {
+      try {
+        const { config_complete } = await checkConfigStatus();
+        setIsSetupComplete(config_complete);
+      } catch (error) {
+        console.error('Failed to check config status:', error);
+        setIsSetupComplete(false);
+      }
+    };
+    checkConfig();
   }, []);
 
   if (isSetupComplete === null) return null; // avoid flicker

@@ -1,7 +1,7 @@
 from fastapi import APIRouter, UploadFile, HTTPException
 import os
 from utils.file_saver import save_uploaded_file_sync
-from config.config_manager import CONFIG_DIR
+from config.config_manager import CONFIG_DIR, check_config_files_exist
 
 router = APIRouter()
 
@@ -10,6 +10,11 @@ REQUIRED_FILES = [
     "system_definition.yaml",
     "deep_dive_config.yaml",
 ]
+
+@router.get("/config-status")
+async def get_config_status():
+    """Check if all required config files are present."""
+    return {"config_complete": check_config_files_exist()}
 
 @router.post("/upload-config")
 async def upload_config(file: UploadFile):

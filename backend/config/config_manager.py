@@ -1,10 +1,16 @@
 import yaml
 import os
 from functools import lru_cache
+from pathlib import Path
 
-CONFIG_DIR = os.path.expanduser("~/.agentic_ai_config")
-print(f"[CONFIG MANAGER] CONFIG_DIR resolved to: {CONFIG_DIR}")
+# Use a cloud-friendly config directory
+CONFIG_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'configs')
+os.makedirs(CONFIG_DIR, exist_ok=True)
 
+def check_config_files_exist() -> bool:
+    """Check if all required config files exist."""
+    required_files = ['metric_config.yaml', 'system_definition.yaml', 'deep_dive_config.yaml']
+    return all(os.path.exists(os.path.join(CONFIG_DIR, f)) for f in required_files)
 
 def load_yaml(file_path: str) -> dict:
     try:
@@ -73,7 +79,8 @@ def load_deep_dive_config() -> dict:
 
 # @lru_cache(maxsize=8)
 # def load_system_config() -> dict:
-#     return load_yaml(os.path.join(CONFIG_DIR, 'system_config.yaml'))
+#     path = os.path.join(CONFIG_DIR, 'system_config.yaml')
+#     return load_yaml(path)
 
 
 # # import yaml
