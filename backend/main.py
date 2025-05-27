@@ -18,10 +18,10 @@ app.add_middleware(
 )
 
 # Import and include routers
-from routes import config_routes, analysis_routes, deep_dive_routes
+from routes import config_routes, analyze_routes, deep_dive_routes
 
 app.include_router(config_routes.router, prefix="/api")
-app.include_router(analysis_routes.router, prefix="/api")
+app.include_router(analyze_routes.router, prefix="/api")
 app.include_router(deep_dive_routes.router, prefix="/api")
 
 @app.get("/api/ping")
