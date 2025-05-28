@@ -145,55 +145,33 @@ const DeepDivePage = () => {
     }
   }, [requestJson, navigate]);
 
-  // Helper to identify control row index in a segment
-  function findControlIndex(metrics: any[]) {
-    const controlKeywords = ["control", "ctrl", "default", "def", "0", "-ctrl"];
-    function controlScore(token: string) {
-      token = token.toLowerCase();
-      let score = 0;
-      for (const kw of controlKeywords) {
-        if (token === kw) score += 100;
-        if (kw === '0' && /[:_\-]0$/.test(token)) score += 50;
-        if (new RegExp(`(^|[:_\-])${kw}($|[:_\-])`).test(token)) score += 20;
-        if (token.includes(kw)) score += 5;
-      }
-      return score;
+  // Helper to get unique bucket names for a segment
+  function getBucketsForSegment(metrics: any[]): string[] {
+    if (!metrics || metrics.length === 0) return [];
+    // Find all columns that are not 'name' or 'control' and do not end with '_change'
+    const columns = Object.keys(metrics[0] || {});
+    return columns.filter(col => col !== 'name' && col !== 'control' && !col.endsWith('_change'));
+  }
+
+  // Helper to color percentage changes
+  function getPctColor(pct: string) {
+    if (!pct || pct === '-') return 'text-gray-500';
+    const value = parseFloat(pct);
+    if (isNaN(value)) return 'text-gray-500';
+    if (value > 0) return 'text-green-600 font-bold';
+    if (value < 0) return 'text-red-600 font-bold';
+    return 'text-gray-700';
+  }
+
+  // Add this helper function after the getPctColor function
+  const formatMetricValue = (value: any, metricName?: string) => {
+    if (!value || value === '-') return '-';
+    if (typeof value === 'string') return value;
+    if (metricName && (metricName.includes('Price') || metricName.includes('Profit'))) {
+      return `$${Number(value).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
     }
-    let bestIdx = -1;
-    let bestScore = 0;
-    metrics.forEach((row, idx) => {
-      const token = String(row['Experiment Tokens'] || row['bucket'] || '');
-      const score = controlScore(token);
-      if (score > bestScore) {
-        bestScore = score;
-        bestIdx = idx;
-      }
-    });
-    return bestScore > 0 ? bestIdx : -1;
-  }
-
-  // Compute %Change for each metric row in a segment using value and baseline
-  function computePercentChangeForSegment(metrics: any[]) {
-    return metrics.map((row: any) => {
-      const value = parseFloat(row.value);
-      const baseline = parseFloat(row.baseline);
-      let pct = '-';
-      if (!isNaN(value) && !isNaN(baseline) && baseline !== 0) {
-        const pctVal = 100 * (value - baseline) / Math.abs(baseline);
-        const sign = pctVal >= 0 ? '+' : '';
-        pct = `${sign}${pctVal.toFixed(2)}%`;
-      }
-      return { ...row, '%Change': pct };
-    });
-  }
-
-  // Compute %Change for all segments after API response
-  const processedSegments = response && response.segments
-    ? response.segments.map((segment: any) => ({
-        ...segment,
-        metrics: computePercentChangeForSegment(segment.metrics || [])
-      }))
-    : [];
+    return Number(value).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  };
 
   if (!requestJson) return (
     showPopup ? (
@@ -325,88 +303,104 @@ const DeepDivePage = () => {
         {response && (
           <>
             <div ref={reportRef} className="mt-8">
-            <h3 className="text-xl font-bold text-indigo-700 mb-4">Segment Insights</h3>
-              {processedSegments.map((segment: any, index: number) => (
-                <div key={index} className="mb-10 avoid-break no-rounded no-shadow no-overflow" data-html2pdf-pagebreak="avoid">
-                  <div className="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-2xl mb-4">
-                    <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-2">
-                      <p className="text-lg font-semibold text-indigo-800">{segment.segment}</p>
+              <h3 className="text-xl font-bold text-indigo-700 mb-4">Segment Insights</h3>
+              {response.segments.map((segment: any, index: number) => {
+                const buckets = getBucketsForSegment(segment.metrics);
+                return (
+                  <div key={index} className="mb-10 avoid-break no-rounded no-shadow no-overflow" data-html2pdf-pagebreak="avoid">
+                    <div className="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-2xl mb-4">
+                      <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-2">
+                        <p className="text-lg font-semibold text-indigo-800">{segment.segment}</p>
+                      </div>
+                      {/* Metrics Table */}
+                      <div className="overflow-x-auto">
+                        {segment.metrics && segment.metrics.length > 0 ? (
+                          <table className="min-w-full border-separate border-spacing-y-2 mb-4 pdf-metrics-table">
+                            <thead>
+                              <tr className="text-left text-gray-600 text-sm">
+                                <th className="px-4 py-2 sticky left-0 bg-white z-10">Metric</th>
+                                <th className="px-4 py-2 bg-gray-50">Control</th>
+                                {buckets.map((bucket) => (
+                                  <React.Fragment key={bucket}>
+                                    <th className="px-4 py-2 bg-gray-50">{bucket}</th>
+                                    <th className="px-4 py-2 bg-gray-50 group relative">
+                                      % Change
+                                      <div className="absolute left-0 top-full mt-1 w-48 p-2 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity z-20">
+                                        Percentage change relative to control bucket
+                                      </div>
+                                    </th>
+                                  </React.Fragment>
+                                ))}
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {segment.metrics.map((row: any, rowIndex: number) => (
+                                <tr key={rowIndex} className="bg-white hover:bg-gray-50 transition-colors">
+                                  <td className="px-4 py-2 font-medium text-gray-900 sticky left-0 bg-white z-10">{row.name}</td>
+                                  <td className="px-4 py-2 text-gray-700">{formatMetricValue(row.control, row.name)}</td>
+                                  {buckets.map((bucket) => (
+                                    <React.Fragment key={bucket}>
+                                      <td className="px-4 py-2 text-gray-700">{formatMetricValue(row[bucket], row.name)}</td>
+                                      <td className={`px-4 py-2 ${getPctColor(row[`${bucket}_change`])}`}>
+                                        {row[`${bucket}_change`]}
+                                      </td>
+                                    </React.Fragment>
+                                  ))}
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        ) : (
+                          <div className="text-gray-500 mb-4">No metrics to display.</div>
+                        )}
+                      </div>
                     </div>
-                    {/* Metrics Table */}
-                    <div className="overflow-x-auto">
-                      {segment.metrics && segment.metrics.length > 0 ? (
-                        <table className="min-w-full border-separate border-spacing-y-2 mb-4 pdf-metrics-table">
-                  <thead>
-                            <tr className="text-left text-gray-600 text-sm">
-                              <th className="px-4 py-2">Metric</th>
-                              <th className="px-4 py-2">Value</th>
-                              <th className="px-4 py-2">Baseline</th>
-                              <th className="px-4 py-2">%Change</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                            {(() => {
-                              const allMetricNames: string[] = Array.from(new Set(segment.metrics.map((m: any) => String(m.name))));
-                              const sortedMetricNames: string[] = [
-                                ...preferredMetricOrder.filter(m => allMetricNames.includes(m)),
-                                ...allMetricNames.filter(m => !preferredMetricOrder.includes(m)).sort()
-                              ];
-                              return (sortedMetricNames as string[]).map((metricName: string) => {
-                                const m = segment.metrics.find((x: any) => x.name === metricName);
-                                if (!m) return null;
-                                return (
-                                  <tr key={metricName} className={
-                                    m.significance === 'positive' ? 'bg-green-50' : m.significance === 'negative' ? 'bg-red-50' : ''
-                                  }>
-                                    <td className="px-4 py-2 font-medium text-gray-700">{m.name}</td>
-                                    <td className="px-4 py-2">{typeof m.value === 'number' ? m.value.toFixed(2) : String(m.value)}</td>
-                                    <td className="px-4 py-2">{typeof m.baseline === 'number' ? m.baseline.toFixed(2) : String(m.baseline)}</td>
-                                    <td className="px-4 py-2">{m['%Change'] ? m['%Change'] : '-'}</td>
-                                  </tr>
-                                );
-                              });
-                            })()}
-                          </tbody>
-                        </table>
-                      ) : (
-                        <div className="text-gray-500 mb-4">No metrics to display.</div>
-                      )}
-                    </div>
-                  </div>
-                  {/* Final Verdict */}
-                  {segment.final_verdict && (
-                    <div className="bg-green-50 border-l-4 border-green-400 p-4 rounded-xl mb-4 w-full max-w-2xl">
-                      <div className="text-lg font-bold text-green-700 mb-1">Final Verdict</div>
-                      <div className="text-gray-800">{segment.final_verdict}</div>
-                    </div>
-                  )}
-                  {/* Scalability Verdict */}
-                  {segment.scalability_verdict && segment.scalability_verdict.verdict && (
-                    <div className="bg-blue-50 border-l-4 border-blue-400 p-4 rounded-xl mb-4 w-full max-w-2xl">
-                      <div className="text-lg font-bold text-blue-700 mb-1">Scalability Verdict</div>
-                      <div className="text-blue-900 font-semibold mb-1">{segment.scalability_verdict.verdict}</div>
-                      {segment.scalability_verdict.reasons && segment.scalability_verdict.reasons.length > 0 && (
-                        <ul className="list-disc pl-6 text-gray-800 space-y-1">
-                          {segment.scalability_verdict.reasons.map((reason: string, idx: number) => (
-                            <li key={idx}>{reason}</li>
+                    {/* Final Verdict */}
+                    {segment.final_verdict && (
+                      <div className="bg-green-50 border-l-4 border-green-400 p-4 rounded-xl mb-4 w-full max-w-2xl">
+                        <div className="text-lg font-bold text-green-700 mb-1">Final Verdict</div>
+                        <div className="text-gray-800">{segment.final_verdict}</div>
+                      </div>
+                    )}
+                    {/* Scalability Verdict */}
+                    {segment.scalability_verdict && segment.scalability_verdict.verdict && (
+                      <div className="bg-blue-50 border-l-4 border-blue-400 p-4 rounded-xl mb-4 w-full max-w-2xl">
+                        <div className="text-lg font-bold text-blue-700 mb-1">Scalability Verdict</div>
+                        <div className="text-blue-900 font-semibold mb-1">{segment.scalability_verdict.verdict}</div>
+                        {segment.scalability_verdict.reasons && segment.scalability_verdict.reasons.length > 0 && (
+                          <ul className="list-disc pl-6 text-gray-800 space-y-1">
+                            {segment.scalability_verdict.reasons.map((reason: string, idx: number) => (
+                              <li key={idx}>{reason}</li>
+                            ))}
+                          </ul>
+                        )}
+                      </div>
+                    )}
+                    {/* Key Insights */}
+                    {segment.key_insights && segment.key_insights.length > 0 && (
+                      <div className="bg-white rounded-2xl shadow p-6 w-full max-w-2xl mb-4">
+                        <h3 className="text-xl font-bold text-indigo-700 mb-2">Key Insights</h3>
+                        <ul className="list-disc pl-6 text-gray-700 space-y-1">
+                          {segment.key_insights.map((v: string, i: number) => (
+                            <li key={i}>{v}</li>
                           ))}
                         </ul>
-                      )}
-                    </div>
-                  )}
-                  {/* Key Insights */}
-                  {segment.key_insights && segment.key_insights.length > 0 && (
-                    <div className="bg-white rounded-2xl shadow p-6 w-full max-w-2xl mb-4">
-                      <h3 className="text-xl font-bold text-indigo-700 mb-2">Key Insights</h3>
-                      <ul className="list-disc pl-6 text-gray-700 space-y-1">
-                        {segment.key_insights.map((v: string, i: number) => (
-                          <li key={i}>{v}</li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
-              </div>
-            ))}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+              {/* Overall Commentary */}
+              {response.overall_commentary && response.overall_commentary.length > 0 && (
+                <div className="mt-6 p-4 bg-green-50 border-l-4 border-green-500 rounded">
+                  <h4 className="text-green-700 font-semibold mb-2">Overall Commentary</h4>
+                  <ul className="list-disc pl-6 text-gray-800 space-y-1">
+                    {response.overall_commentary.map((c: string, i: number) => (
+                      <li key={i}>{c}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
             </div>
             <div className="flex gap-4 mt-4">
               <button
@@ -415,7 +409,7 @@ const DeepDivePage = () => {
               >
                 Download Deep Dive PDF
               </button>
-          </div>
+            </div>
           </>
         )}
       </div>
