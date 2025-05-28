@@ -69,11 +69,6 @@ def run_deep_dive_agent(
 
     df = parse_response_json(response_json)
     df = preprocess_dataframe(df)
-    if 'Experiment Tokens' in df.columns:
-        df = enhance_with_percentage_changes(df)
-        for col in df.columns:
-            if col.startswith('% Change in '):
-                df[col] = df[col].apply(lambda x: f"{x}" if not x else (x if x.endswith('%') else f"{float(x.replace('%','')):.2f}%" if isinstance(x, str) and x.replace('%','').replace('.','',1).replace('+','',1).replace('-','',1).isdigit() else x))
 
     # 4. Load configs
     system_def = load_yaml(os.path.join(CONFIG_DIR, 'system_definition.yaml'))
@@ -81,7 +76,7 @@ def run_deep_dive_agent(
     metric_config = load_yaml(os.path.join(CONFIG_DIR, 'metric_config.yaml'))
     metric_defs = {m['name']: m.get('definition', '') for m in metric_config.get('metrics', [])}
 
-    # 5. Segment-level analysis
+    # 5. Segment-level analysis (all metrics and %changes in code)
     if not dimensions:
         raise HTTPException(status_code=400, detail="No dimensions provided for deep dive.")
     segment_keys = df[dimensions].drop_duplicates().to_dict(orient='records')
@@ -90,9 +85,11 @@ def run_deep_dive_agent(
     for seg in segment_keys:
         mask = (df[list(seg)] == pd.Series(seg)).all(axis=1)
         seg_df = df[mask]
-        metrics_table = seg_df.round(2).to_dict(orient='records')
+        # Use the same multi-bucket enhancement as main analysis
+        seg_df_enhanced = enhance_with_percentage_changes(seg_df)
+        metrics_table = seg_df_enhanced.round(2).to_dict(orient='records')
         segment_name = ', '.join([f"{k} = {v}" for k, v in seg.items()])
-
+        # Only call LLM for summary/insight, not for metrics
         prompt = f"""
 System: {system}
 System Definition: {json.dumps(system_def, indent=2)}
@@ -103,33 +100,7 @@ Metric Table:
 Metric Definitions: {json.dumps(metric_defs, indent=2)}
 
 Instructions:
-Analyze this segment and return a JSON with:
-{{{{
-  "metrics": [
-    {{{{
-      "name": "metric_name",
-      "value": numeric_value,
-      "baseline": baseline_value,
-      "change": change_percentage,
-      "significance": "positive" | "negative" | "neutral"
-    }}}}
-  ],
-  "key_insights": ["string", ...],
-  "final_verdict": "string (format: 'Final Verdict: <cohort name> is best overall')",
-  "scalability_verdict": {{{{
-    "verdict": "Scale" | "Hold" | "Avoid",
-    "reasons": ["string (concise, number-driven)", ...]
-  }}}}
-}}}}
-
-Instructions for scalability_verdict:
-- The 'scalability_verdict' field MUST be a JSON object with exactly two fields: 'verdict' (string: Scale, Hold, or Avoid) and 'reasons' (array of 1–2 concise, number-driven bullet points).
-- Do NOT return a string, markdown, or prose. Only return a valid JSON object as specified.
-- If you do not know, return: {{{{"verdict": "", "reasons": []}}}}
-- The 'reasons' array should contain 1-2 bullets only.
-
-Be concise, analytical, and number-driven. Write in complete sentences.
-"""
+Summarize the key insights for this segment in 1-2 concise, number-driven bullet points. Return only a JSON array of strings, e.g. ["...", "..."]. Be specific with numbers and metrics."
         try:
             openai.api_key = os.environ.get("OPENAI_API_KEY")
             response = openai.chat.completions.create(
@@ -137,41 +108,29 @@ Be concise, analytical, and number-driven. Write in complete sentences.
                 messages=[{"role": "user", "content": prompt}],
             )
             content = response.choices[0].message.content
-            parsed = json.loads(content)
-            parsed = clean_segment_fields(parsed)
-            # Fallback for scalability_verdict if it's a string
-            sv = parsed.get("scalability_verdict", {})
-            if isinstance(sv, str):
-                verdict = sv.split('-')[0].strip() if '-' in sv else sv.strip()
-                reasons = [r.strip() for r in sv.split('•') if r.strip()]
-                if len(reasons) == 0:
-                    reasons = [sv]
-                parsed["scalability_verdict"] = {"verdict": verdict, "reasons": reasons}
-            segments.append({
-                "segment": segment_name,
-                "metrics": parsed.get("metrics"),
-                "key_insights": parsed.get("key_insights", []),
-                "final_verdict": parsed.get("final_verdict", ""),
-                "scalability_verdict": parsed.get("scalability_verdict", {"verdict": "", "reasons": []}),
-                "insight": parsed.get("insight", parsed.get("summary", ""))
-            })
+            try:
+                key_insights = json.loads(content)
+                if not isinstance(key_insights, list):
+                    key_insights = [str(key_insights)]
+            except Exception:
+                key_insights = [content]
         except Exception as e:
-            metrics = format_metrics(metrics_table[0] if metrics_table else {})
-            segments.append({
-                "segment": segment_name,
-                "metrics": metrics,
-                "key_insights": [],
-                "final_verdict": "",
-                "scalability_verdict": {"verdict": "", "reasons": []},
-                "insight": ""
-            })
+            key_insights = [f"LLM summary failed: {e}"]
+        segments.append({
+            "segment": segment_name,
+            "metrics": metrics_table,
+            "key_insights": key_insights,
+            "final_verdict": "",
+            "scalability_verdict": {"verdict": "", "reasons": []},
+            "insight": ""
+        })
 
-    # 6. Overall summary
+    # 6. Overall summary (batch LLM call for all segments)
     overall_prompt = f"""
 System: {system}
 System Definition: {json.dumps(system_def, indent=2)}
 Deep Dive Config: {json.dumps(deep_dive_config, indent=2)}
-Segments: {json.dumps(segments, indent=2)}
+Segments: {json.dumps([{'segment': s['segment'], 'key_insights': s['key_insights']} for s in segments], indent=2)}
 
 Instructions:
 Summarize the key patterns and insights across all segments in 2-4 concise, analytical, and number-driven bullet points.

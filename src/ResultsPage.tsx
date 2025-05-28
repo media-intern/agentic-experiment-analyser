@@ -44,105 +44,67 @@ const ResultsPage = () => {
   // Helper to get unique bucket names and metrics
   const getBucketsAndMetrics = (): { buckets: string[]; metrics: string[] } => {
     if (!results || !results.metrics_table) return { buckets: [], metrics: [] };
-    // Assume each row has a 'bucket' or 'Experiment Tokens' field
-    const buckets: string[] = Array.from(new Set(results.metrics_table.map((row: any) => String(row['Experiment Tokens'] || row['bucket'] || 'Bucket'))));
-    // Get all unique metric names
-    const metrics: string[] = Array.from(new Set(results.metrics_table.map((row: any) => String(row.name))));
+    
+    // Get all column names except 'name' and 'control'
+    const columns = Object.keys(results.metrics_table[0] || {});
+    const buckets = columns.filter(col => !col.endsWith('_change') && col !== 'name' && col !== 'control');
+    const metrics = results.metrics_table.map((row: any) => row.name);
+    
     return { buckets, metrics };
   };
 
   const { buckets, metrics } = getBucketsAndMetrics();
 
-  // Group rows by metric name
-  const metricsMap: { [metric: string]: any[] } = {};
-  if (results && results.metrics_table) {
-    (results.metrics_table as any[]).forEach((row: any) => {
-      const metricName = String(row.name);
-      if (!metricsMap[metricName]) metricsMap[metricName] = [];
-      metricsMap[metricName].push(row);
-    });
-  }
-
-  // Helper to color %change
+  // Helper to color percentage changes
   const getPctColor = (pct: string) => {
     if (!pct || pct === '-') return 'text-gray-500';
-    if (pct.startsWith('+')) return 'text-green-600 font-bold';
-    if (pct.startsWith('-')) return 'text-red-600 font-bold';
+    const value = parseFloat(pct);
+    if (isNaN(value)) return 'text-gray-500';
+    if (value > 0) return 'text-green-600 font-bold';
+    if (value < 0) return 'text-red-600 font-bold';
     return 'text-gray-700';
   };
-
-  // Compute %Change for each metric row after API response
-  function computePercentChange(metricsTable: any[]) {
-    return metricsTable.map((row) => {
-      const value = parseFloat(row.value);
-      const baseline = parseFloat(row.baseline);
-      let pct = '-';
-      if (!isNaN(value) && !isNaN(baseline) && baseline !== 0) {
-        const pctVal = 100 * (value - baseline) / Math.abs(baseline);
-        const sign = pctVal >= 0 ? '+' : '';
-        pct = `${sign}${pctVal.toFixed(2)}%`;
-      }
-      return { ...row, '%Change': pct };
-    });
-  }
-
-  // Use computed metrics table for rendering
-  const metricsTable = results && results.metrics_table ? computePercentChange(results.metrics_table) : [];
-
-  // Preferred metric order (customize as needed)
-  const preferredMetricOrder = [
-    "Bid Price (HB Rendered Ad)",
-    "Profit (HB Rendered Ad)",
-    "Bidder Win Rate (1K)",
-    "Bidder Rev Rate (10M)",
-    "MNET Rev Rate (10M)"
-  ];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex flex-col items-center justify-center p-4">
       <div ref={reportRef} className="w-full flex flex-col items-center">
-        <div className="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-2xl mb-6">
+        <div className="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-4xl mb-6">
           <h2 className="text-2xl font-bold text-gray-800 mb-1">Metrics Analysis</h2>
           <p className="text-gray-500 mb-4">Comparison with baseline</p>
           <div className="overflow-x-auto">
-            {metricsTable && metricsTable.length > 0 ? (
+            {results && results.metrics_table && results.metrics_table.length > 0 ? (
               <table className="min-w-full border-separate border-spacing-y-2">
                 <thead>
                   <tr className="text-left text-gray-600 text-sm">
                     <th className="px-4 py-2">Metric</th>
-                    <th className="px-4 py-2">Value</th>
-                    <th className="px-4 py-2">Baseline</th>
-                    <th className="px-4 py-2">%Change</th>
+                    <th className="px-4 py-2">Control</th>
+                    {buckets.map((bucket, index) => (
+                      <React.Fragment key={bucket}>
+                        <th className="px-4 py-2">{bucket}</th>
+                        <th className="px-4 py-2">% Change</th>
+                      </React.Fragment>
+                    ))}
                   </tr>
                 </thead>
                 <tbody>
-                  {(() => {
-                    // Get all unique metric names
-                    const allMetricNames: string[] = Array.from(new Set(metricsTable.map((m: any) => String(m.name))));
-                    // Sort: preferred first, then rest alphabetically
-                    const sortedMetricNames: string[] = [
-                      ...preferredMetricOrder.filter(m => allMetricNames.includes(m)),
-                      ...allMetricNames.filter(m => !preferredMetricOrder.includes(m)).sort()
-                    ];
-                    return (sortedMetricNames as string[]).map((metricName: string) => {
-                      const m = metricsTable.find((x: any) => x.name === metricName);
-                      if (!m) return null;
-                      return (
-                        <tr key={metricName} className={
-                      m.significance === 'positive' ? 'bg-green-50' : m.significance === 'negative' ? 'bg-red-50' : ''
-                    }>
-                      <td className="px-4 py-2 font-medium text-gray-700">{m.name}</td>
-                      <td className="px-4 py-2">{typeof m.value === 'number' ? m.value.toFixed(2) : String(m.value)}</td>
-                      <td className="px-4 py-2">{typeof m.baseline === 'number' ? m.baseline.toFixed(2) : String(m.baseline)}</td>
-                          <td className="px-4 py-2">{m['%Change'] ? m['%Change'] : '-'}</td>
+                  {results.metrics_table.map((row: any, rowIndex: number) => (
+                    <tr key={rowIndex} className="bg-white">
+                      <td className="px-4 py-2 font-medium text-gray-900">{row.name}</td>
+                      <td className="px-4 py-2 text-gray-700">{row.control}</td>
+                      {buckets.map((bucket) => (
+                        <React.Fragment key={bucket}>
+                          <td className="px-4 py-2 text-gray-700">{row[bucket]}</td>
+                          <td className={`px-4 py-2 ${getPctColor(row[`${bucket}_change`])}`}>
+                            {row[`${bucket}_change`]}
+                          </td>
+                        </React.Fragment>
+                      ))}
                     </tr>
-                      );
-                    });
-                  })()}
+                  ))}
                 </tbody>
               </table>
             ) : (
-              <div className="text-gray-500 mb-4">No metrics to display.</div>
+              <div className="text-center text-gray-500 py-4">No metrics data available</div>
             )}
           </div>
         </div>

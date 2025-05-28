@@ -10,5 +10,3 @@ BSS: |
   highest bid price received. The remaining bids are discarded and the highest bidder wins the ad slot. 
   
   Media.net takes a cut from the winning bid and passes the ad to the SSP.
-
-  For BSS, the demand-side metrics and MNet metrics are important, with the demand-side metrics being slightly more important.
