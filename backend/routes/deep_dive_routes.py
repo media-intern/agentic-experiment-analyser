@@ -1,3 +1,5 @@
+import langchain
+import langgraph
 from fastapi import APIRouter, HTTPException
 from models.analysis_schema import DeepDiveQuery, DeepDiveResponse
 from services.konom_query import fetch_data
